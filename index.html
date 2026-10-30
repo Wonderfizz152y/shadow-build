@@ -83,6 +83,34 @@ td.n{text-align:right}
 .sumtot{border-top:1px solid var(--line);padding:12px 0;font-size:17px}
 input[type=text]{width:100%;min-height:48px;font-size:16px;background:#07101f;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:6px 10px;margin-top:8px}
 .btn.small[data-rest]{width:100%;margin:2px 0 6px}
+/* NEXT UP hero */
+.hero{position:relative;border-color:var(--glow2);background:radial-gradient(120% 90% at 0% 0%,rgba(63,169,255,.22),transparent 60%),linear-gradient(180deg,#10254a,#0a1529);box-shadow:0 0 0 1px rgba(124,200,255,.35),0 0 28px rgba(63,169,255,.45),inset 0 0 30px rgba(63,169,255,.12);padding:16px}
+.hhead{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.kicker{font-size:14px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--glow2);text-shadow:0 0 10px rgba(63,169,255,.8)}
+.kicker .muted{letter-spacing:.04em;text-transform:none;font-weight:400}
+.dtoday{margin-top:8px;font-size:16px;font-weight:700;color:var(--ok);text-shadow:0 0 10px rgba(74,222,128,.5)}
+.htitle{margin:6px 0 8px;font-size:28px;font-weight:800;line-height:1.15;color:#fff;text-shadow:0 0 14px rgba(63,169,255,.85)}
+.hex{list-style:none;margin:0 0 10px;padding:0}
+.hex li{display:flex;gap:8px;align-items:baseline;font-size:15px;padding:3px 0;border-top:1px solid rgba(31,58,102,.7)}
+.hex li:first-child{border-top:0}
+.hex .n{flex:0 0 22px;font-size:13px;color:var(--glow2);font-weight:700}
+.rot{display:flex;gap:6px;margin:10px 0 8px}
+.pill{flex:1 1 0;min-height:36px;border-radius:999px;border:1px solid var(--line);background:rgba(7,16,31,.8);color:var(--muted);display:flex;align-items:center;justify-content:center;gap:3px;font-size:15px;font-weight:700}
+.pill.done{border-color:var(--ok);color:var(--ok);background:rgba(74,222,128,.08)}
+.pill.next{border-color:var(--glow2);color:#03101f;background:var(--glow);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 1px var(--glow),0 0 8px rgba(63,169,255,.45)}50%{box-shadow:0 0 0 3px rgba(124,200,255,.9),0 0 22px rgba(124,200,255,.9)}}
+.hmeta{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:14px;color:var(--muted);margin-bottom:12px}
+.btn.big{width:100%;min-height:56px;font-size:19px;letter-spacing:.08em;text-transform:uppercase}
+/* week bar: next target day */
+.dchip{position:relative}
+.dchip.next::after{content:"";position:absolute;inset:-3px;border:2px solid var(--glow2);border-radius:14px;pointer-events:none;animation:ring 2s ease-in-out infinite}
+@keyframes ring{0%,100%{opacity:.35;box-shadow:0 0 4px rgba(124,200,255,.3)}50%{opacity:1;box-shadow:0 0 16px rgba(124,200,255,.9)}}
+.dchip.next .st{color:#fff;text-shadow:0 0 8px var(--glow)}
+.nx{position:absolute;top:-10px;left:50%;transform:translateX(-50%);font-size:13px;line-height:16px;font-weight:800;letter-spacing:.02em;padding:0 3px;border-radius:6px;background:var(--glow);color:#03101f;box-shadow:0 0 10px rgba(63,169,255,.8);z-index:1}
+/* session chips: Next badge */
+.chip.sug{border-color:var(--glow2)}
+.nexttag{display:inline-block;margin-left:6px;font-size:13px;font-weight:800;letter-spacing:.06em;padding:0 6px;border-radius:6px;background:var(--glow);color:#03101f;vertical-align:1px}
+@media (prefers-reduced-motion:reduce){.pill.next,.dchip.next::after{animation:none}}
 </style>
 <link rel="apple-touch-icon" href="icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#060b16">
 </head>
@@ -186,6 +214,16 @@ const ABBR={"Day A":"A","Day B":"B","Walk + Core":"W","Day C":"C","Day D":"D"};
 const abbr=d=>ABBR[d]||(String(d).replace(/^Day\s*/i,"").charAt(0)||"?").toUpperCase();
 const logsOn=date=>S.log.filter(s=>s.date===date).sort(byTime);
 const label=d=>PLAN[d]?PLAN[d].label:d;
+/* "Day B · Hinge + Press" */
+const title=d=>PLAN[d]&&/^Day /.test(d)?d+" · "+PLAN[d].label.split(" · ").slice(1).join(" · "):label(d);
+const SHORT={goblet:"Goblet squat",pushup:"Push-up",row1:"1-arm row",latraise:"Lateral raise",ohtri:"Overhead triceps",situp:"Weighted sit-up",rdl:"Romanian deadlift",floorpress:"Floor press",row2:"Bent-over row",uprow:"Upright row",curl:"Hammer curl",legraise:"Leg raise",bss:"Bulgarian split squat",press:"Shoulder press",lunge:"Reverse lunge",plank:"Plank",walk:"Incline walk"};
+/* what comes next: the target day is today if today isn't logged, otherwise tomorrow */
+function nextInfo(){const t=today();const L=logsOn(t);const target=L.length?addDays(t,1):t;const next=nextDayBefore(target);
+ const before=S.log.filter(s=>s.date<target).sort(byTime);const prev=before[before.length-1]||null;
+ /* sessions done this rotation: walk back while the rotation order keeps descending */
+ const ni=ROTATION.indexOf(next);const done=new Set();let cur=ni;
+ for(let i=before.length-1;i>=0;i--){const k=ROTATION.indexOf(before[i].day);if(k<0||k>=cur)break;done.add(before[i].day);cur=k;}
+ return{t,target,next,prev,doneToday:L.length?L[L.length-1]:null,done};}
 
 /* ---------------- figures ---------------- */
 const KEYS=["head","sh","el","ha","hip","kn","ft","el2","ha2","kn2","ft2"];
@@ -232,12 +270,23 @@ function draftFor(k){let d=S.draft[k];if(!d||!d.sets){d=S.draft[k]={sets:{},note
 function selectDate(d){sel=d;wk=monday(d);editing=null;}
 function shiftWeek(n){wk=addDays(wk,7*n);const t=today();sel=monday(t)===wk?t:addDays(wk,(pd(sel).getDay()+6)%7);editing=null;render();}
 
-function weekBar(){const t=today();const days=[...Array(7)].map((_,i)=>addDays(wk,i));const range=fmt(days[0])+" – "+fmt(days[6]);
+function heroCard(){const N=nextInfo();const plan=PLAN[N.next];const groups=[];plan.slots.forEach(([blk,ex])=>{let g=groups.find(x=>x.blk===blk);if(!g)groups.push(g={blk,ex:[]});if(!g.ex.includes(ex))g.ex.push(ex);});
+ const when=N.target===N.t?"today":"tomorrow · "+pd(N.target).toLocaleDateString("en-US",{weekday:"short"});
+ const ago=N.prev?(N.prev.date===N.t?"today":(pd(N.t)-pd(N.prev.date))/864e5<7?pd(N.prev.date).toLocaleDateString("en-US",{weekday:"short"}):fmt(N.prev.date)):"";
+ return `<section class="win hero" id="nextup" data-next="${esc(N.next)}" data-target="${N.target}" aria-label="Next up"><div class="hhead"><div class="kicker">Next up <span class="muted">· ${esc(when)}</span></div><span class="tag">~30 min</span></div>
+ ${N.doneToday?`<div class="dtoday" id="donetoday">Done today ✓ (${esc(N.doneToday.day)})</div>`:""}
+ <div class="htitle" id="nexttitle">${esc(title(N.next))}</div>
+ <ul class="hex">${groups.map((g,i)=>`<li><span class="n">${i+1}</span><span>${g.ex.map(x=>esc(SHORT[x]||EX[x].name)).join(" + ")}</span></li>`).join("")}</ul>
+ <div class="rot" id="rot" aria-label="Rotation">${ROTATION.map(d=>{const c=d===N.next?"next":N.done.has(d)?"done":"";return `<span class="pill ${c}" data-rot="${esc(abbr(d))}" title="${esc(label(d))}">${esc(abbr(d))}${c==="done"?" ✓":""}</span>`;}).join("")}</div>
+ <div class="hmeta"><span id="lastdone">${N.prev?"Last: "+esc(N.prev.day)+" · "+esc(ago):"No sessions yet · rotation starts at Day A"}</span><span>A → B → W → C → D</span></div>
+ ${N.target===N.t?`<button class="btn primary big" id="startnext">Start today</button>`:`<button class="btn big" id="startnext" data-start="${N.target}">Preview tomorrow</button>`}</section>`;}
+
+function weekBar(){const t=today();const N=nextInfo();const days=[...Array(7)].map((_,i)=>addDays(wk,i));const range=fmt(days[0])+" – "+fmt(days[6]);
  const cur=monday(t);const title=wk===cur?"This week":wk===addDays(cur,-7)?"Last week":wk===addDays(cur,7)?"Next week":pd(wk).getFullYear()!==pd(t).getFullYear()?String(pd(days[6]).getFullYear()):"Week";
  return `<section class="win weekbar" aria-label="Week"><div class="wkhead"><button class="btn arrow" id="wkprev" aria-label="Previous week">‹</button><div class="lbl" id="wklabel">${esc(title)}<div class="muted">${esc(range)}</div></div><button class="btn arrow" id="wknext" aria-label="Next week">›</button><button class="btn" id="wktoday">Today</button></div>
- <div class="week" id="week">${days.map(d=>{const L=logsOn(d);const c=["dchip"];if(d===t)c.push("today");if(d===sel)c.push("sel");if(L.length)c.push("logged");else if(d<t)c.push("rest");
-  const st=L.length?"✓ "+L.map(x=>abbr(x.day)).join(""):d===t?"today":d<t?"rest":"";
-  return `<button class="${c.join(" ")}" data-date="${d}" aria-pressed="${d===sel}" aria-label="${esc(fmtLong(d))}${L.length?", logged "+esc(L.map(x=>x.day).join(", ")):""}"><span class="wd">${pd(d).toLocaleDateString("en-US",{weekday:"short"})}</span><span class="dn">${pd(d).getDate()}</span><span class="st">${esc(st)}</span></button>`;}).join("")}</div></section>`;}
+ <div class="week" id="week">${days.map(d=>{const L=logsOn(d);const c=["dchip"];if(d===t)c.push("today");if(d===sel)c.push("sel");if(L.length)c.push("logged");else if(d<t)c.push("rest");const isN=d===N.target&&!L.length;if(isN)c.push("next");
+  const st=L.length?"✓ "+L.map(x=>abbr(x.day)).join(""):isN?abbr(N.next):d===t?"today":d<t?"rest":"";
+  return `<button class="${c.join(" ")}" data-date="${d}" aria-pressed="${d===sel}" aria-label="${esc(fmtLong(d))}${L.length?", logged "+esc(L.map(x=>x.day).join(", ")):""}${isN?", next: "+esc(N.next):""}">${isN?`<span class="nx">NEXT</span>`:""}<span class="wd">${pd(d).toLocaleDateString("en-US",{weekday:"short"})}</span><span class="dn">${pd(d).getDate()}</span><span class="st">${esc(st)}</span></button>`;}).join("")}</div></section>`;}
 
 function summaryView(L){return L.map(s=>{const idx=S.log.indexOf(s);const tot=s.entries.reduce((t,e)=>t+e.sets.length,0);
  return `<section class="win summary" data-summary="${esc(s.date)}"><h2>${esc(fmtLong(s.date))} · Quest complete</h2><div class="exhead"><h3 class="sname">${esc(label(s.day))}</h3><span class="tag done">✓ ${tot} sets</span></div>
@@ -249,7 +298,7 @@ function logView(){const d=curDay();const plan=PLAN[d];const dr=draftFor(dk());c
  let h="";
  if(!editing&&sel<t)h+=`<div class="restnote" id="restnote">Rest day · nothing logged. Trained that day? Fill it in below.</div>`;
  if(!editing&&sel>t)h+=`<div class="restnote">Upcoming day. Planned session shown below.</div>`;
- h+=`<section class="win"><h2>${editing?"Editing":"Log"} · ${esc(fmtLong(sel))}</h2><div class="chips sess">${ROTATION.map(x=>`<button class="chip ${x===d?"on":""}" data-day="${esc(x)}">${esc(PLAN[x].label)}${x===sug?" ★":""}</button>`).join("")}</div><p class="muted">★ = next in your rotation after your last logged session. Tap another to switch. 3 min warm-up, then supersets: exercise 1 → exercise 2 → rest. Stop most sets 1–3 reps from failure; last set 0–1.</p></section>`;
+ h+=`<section class="win" id="logwin"><h2>${editing?"Editing":"Log"} · ${esc(fmtLong(sel))}</h2><div class="chips sess">${ROTATION.map(x=>`<button class="chip ${x===d?"on":""}${x===sug?" sug":""}" data-day="${esc(x)}">${esc(PLAN[x].label)}${x===sug?`<span class="nexttag">Next</span>`:""}</button>`).join("")}</div><p class="muted">Next = the next session in your rotation after your last logged session. Tap another to switch. 3 min warm-up, then supersets: exercise 1 → exercise 2 → rest. Stop most sets 1–3 reps from failure; last set 0–1.</p></section>`;
  let lastBlock="";
  plan.slots.forEach(([block,ex,sets,rest],idx)=>{const e=EX[ex];const key=ex+"#"+idx;const hist=history(ex,sel,editing);const last=hist[hist.length-1];const lvl=dr.levels[ex]!=null?dr.levels[ex]:(S.levels[ex]||0);
   if(block!==lastBlock){if(lastBlock)h+=`</section>`;h+=`<section class="win"><h2>${esc(block)}</h2>`;lastBlock=block;}
@@ -271,7 +320,7 @@ function logView(){const d=curDay();const plan=PLAN[d];const dr=draftFor(dk());c
  <p class="muted">Saves the reps you entered for this date on this device${editing?", replacing the old entry":""}. Empty sets are skipped.</p></section>`;
  return h;}
 
-function workoutView(){if(editing&&S.log.indexOf(editing)<0)editing=null;const L=logsOn(sel);return weekBar()+(L.length&&!editing?summaryView(L):logView());}
+function workoutView(){if(editing&&S.log.indexOf(editing)<0)editing=null;const L=logsOn(sel);return heroCard()+weekBar()+(L.length&&!editing?summaryView(L):logView());}
 
 function progressView(){const exs=[...new Set(S.log.flatMap(s=>s.entries.map(e=>e.ex)))].filter(x=>EX[x]);
  if(!exs.length)return`<section class="win"><h2>Progress</h2><p class="muted">Log a session to see charts, records and targets.</p></section>`;
@@ -311,6 +360,7 @@ app.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return
  if(b.id==="wkprev"){shiftWeek(-1);return;}
  if(b.id==="wknext"){shiftWeek(1);return;}
  if(b.id==="wktoday"){selectDate(today());render();return;}
+ if(b.id==="startnext"){const N=nextInfo();selectDate(N.target);if(!logsOn(N.target).length)pick[N.target]=N.next;render();const w=document.getElementById("logwin")||document.querySelector("section.summary");if(w)window.scrollTo(0,Math.max(0,w.getBoundingClientRect().top+window.scrollY-document.querySelector("header").offsetHeight-8));return;}
  if(b.dataset.day){pick[sel]=b.dataset.day;render();window.scrollTo(0,0);return;}
  if(b.dataset.rest){startRest(+b.dataset.rest);return;}
  if(b.dataset.edit!=null){const s=S.log[+b.dataset.edit];if(!s)return;editing=s;delete pick[sel];const d=curDay();const dr=S.draft[sel+"|"+d]={sets:{},notes:{},levels:{},extra:[]};
