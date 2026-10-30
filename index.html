@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#060b16">
+<title>Shadow Build</title>
+<style>
+:root{--bg:#060b16;--panel:#0b1426;--panel2:#0f1c33;--line:#1f3a66;--glow:#3fa9ff;--glow2:#7cc8ff;--text:#e6f0ff;--muted:#8ea4c4;--ok:#4ade80;--warn:#fbbf24;--bad:#f87171}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:16px;line-height:1.45}
+body{background:radial-gradient(ellipse at top,#0d1d3a 0%,var(--bg) 60%) fixed;min-height:100vh;padding-bottom:calc(90px + env(safe-area-inset-bottom))}
+header{position:sticky;top:0;z-index:10;background:rgba(6,11,22,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:10px 14px calc(8px) }
+h1{margin:0;font-size:18px;letter-spacing:.12em;text-transform:uppercase;color:var(--glow2);text-shadow:0 0 10px rgba(63,169,255,.6)}
+.sub{color:var(--muted);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+nav{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+nav button,.chip{flex:1 1 auto;min-height:44px;padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-size:14px;cursor:pointer}
+nav button.on,.chip.on{border-color:var(--glow);box-shadow:0 0 0 1px var(--glow),0 0 14px rgba(63,169,255,.45);color:var(--glow2)}
+main{max-width:760px;margin:0 auto;padding:12px}
+.win{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--glow);border-radius:14px;box-shadow:0 0 18px rgba(63,169,255,.22),inset 0 0 22px rgba(63,169,255,.06);padding:14px;margin:12px 0}
+.win h2{margin:0 0 8px;font-size:15px;letter-spacing:.1em;text-transform:uppercase;color:var(--glow2)}
+.win h3{margin:0;font-size:17px}
+.muted{color:var(--muted);font-size:14px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.ex{border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0;background:rgba(10,20,40,.6)}
+.exhead{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px;align-items:baseline}
+.tag{font-size:12px;color:var(--glow2);border:1px solid var(--line);border-radius:999px;padding:2px 8px}
+.fig{width:100%;max-width:340px;display:block;margin:8px auto}
+.sets{display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:8px;margin-top:8px}
+.sets label{font-size:11px;color:var(--muted);display:block;text-align:center}
+input[type=number],input[type=date],select{width:100%;min-height:48px;font-size:18px;text-align:center;background:#07101f;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:6px}
+input:focus,select:focus{outline:none;border-color:var(--glow);box-shadow:0 0 10px rgba(63,169,255,.5)}
+select{text-align:left;font-size:16px}
+.btn{min-height:48px;padding:10px 16px;border-radius:12px;border:1px solid var(--glow);background:rgba(63,169,255,.12);color:var(--glow2);font-size:16px;font-weight:600;cursor:pointer;letter-spacing:.04em}
+.btn.primary{background:var(--glow);color:#03101f;box-shadow:0 0 16px rgba(63,169,255,.6)}
+.btn.small{min-height:40px;font-size:14px;padding:6px 12px}
+.btn.danger{border-color:var(--bad);color:var(--bad);background:transparent}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.row>*{flex:1 1 140px}
+details summary{cursor:pointer;color:var(--glow2);min-height:36px;padding-top:6px}
+ol{margin:6px 0;padding-left:20px}
+ol li{margin:4px 0}
+.target{font-size:13px;color:var(--ok)}
+.last{font-size:13px;color:var(--muted)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{color:var(--muted);font-weight:500;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+td.n{text-align:right}
+#timer{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(6,11,22,.96);border-top:1px solid var(--glow);box-shadow:0 -4px 20px rgba(63,169,255,.3);padding:10px 14px calc(10px + env(safe-area-inset-bottom));display:flex;gap:6px;align-items:center;flex-wrap:nowrap}
+#timer .t{font-size:24px;flex:0 0 auto;font-variant-numeric:tabular-nums;color:var(--glow2);min-width:80px;text-shadow:0 0 10px rgba(63,169,255,.6)}
+#timer .btn{flex:1 1 0;min-width:0;padding:6px 4px}
+.toast{position:fixed;left:50%;top:16px;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--glow);padding:10px 16px;border-radius:10px;z-index:30;box-shadow:0 0 16px rgba(63,169,255,.5)}
+.hidden{display:none}
+.chart{width:100%;height:auto;display:block}
+.done{color:var(--ok)}
+</style>
+<link rel="apple-touch-icon" href="icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#060b16">
+</head>
+<body>
+<header>
+  <h1>Shadow Build</h1>
+  <div class="sub">System: 30-minute home program · offline</div>
+  <nav id="nav"></nav>
+</header>
+<main id="app"></main>
+<div id="timer">
+  <span class="t" id="tval">0:00</span>
+  <button class="btn small" data-rest="45">45 s</button>
+  <button class="btn small" data-rest="60">60 s</button>
+  <button class="btn small" data-rest="75">75 s</button>
+  <button class="btn small" id="tstop">Stop</button>
+</div>
+<script>
+"use strict";
+/* ---------------- program data (mirrors the Shadow Build page) ---------------- */
+const STAND={ft:[100,118],kn:[101,93],hip:[100,68],sh:[100,34],head:[100,22]};
+const HINGE={ft:[100,118],kn:[106,95],hip:[90,72],sh:[122,56],head:[134,51]};
+const LYING={head:[40,112],sh:[55,114],hip:[95,116],kn:[120,96],ft:[140,118]};
+const SQUAT={ft:[100,118],kn:[120,100],hip:[95,98],sh:[108,66],head:[113,54]};
+const ROW1={ft:[96,118],kn:[100,95],hip:[86,72],sh:[124,64],head:[137,61],el2:[134,82],ha2:[140,100]};
+const M=(o,p)=>Object.assign({},o,p);
+const MOVES={
+ pushup:{period:2200,a:{ft:[40,118],kn:[68,110],hip:[96,102],sh:[145,88],head:[160,81],el:[147,103],ha:[148,118]},b:{ft:[40,118],kn:[68,113],hip:[96,110],sh:[145,106],head:[161,101],el:[132,108],ha:[148,118]}},
+ floorpress:{period:2400,db:1,a:M(LYING,{el:[60,118],ha:[62,102]}),b:M(LYING,{el:[56,99],ha:[56,84]})},
+ row:{period:2400,db:1,a:M(HINGE,{el:[122,72],ha:[122,88]}),b:M(HINGE,{el:[110,52],ha:[112,68]})},
+ row1:{period:2400,db:1,bench:1,benchX:128,a:M(ROW1,{el:[124,80],ha:[124,96]}),b:M(ROW1,{el:[108,60],ha:[112,76]})},
+ press:{period:2400,db:1,a:M(STAND,{el:[104,50],ha:[106,34]}),b:M(STAND,{el:[102,19],ha:[102,5]})},
+ latraise:{period:2400,db:1,a:M(STAND,{el:[104,52],ha:[107,66],el2:[97,52],ha2:[95,66]}),b:M(STAND,{el:[128,37],ha:[131,51],el2:[97,52],ha2:[95,66]})},
+ uprow:{period:2400,db:1,a:M(STAND,{el:[103,52],ha:[105,68]}),b:M(STAND,{el:[120,31],ha:[107,44]})},
+ curl:{period:2200,db:1,a:M(STAND,{el:[102,52],ha:[103,68]}),b:M(STAND,{el:[102,52],ha:[112,39]})},
+ tricep:{period:2400,db:1,a:M(STAND,{el:[103,18],ha:[90,28]}),b:M(STAND,{el:[103,18],ha:[105,3]})},
+ goblet:{period:2600,db:1,a:M(STAND,{el:[104,52],ha:[108,42]}),b:M(SQUAT,{el:[116,78],ha:[120,66]})},
+ rdl:{period:2800,db:1,a:M(STAND,{el:[100,50],ha:[100,66]}),b:{ft:[100,118],kn:[104,94],hip:[88,70],sh:[120,52],head:[132,48],el:[120,68],ha:[120,84]}},
+ bss:{period:2600,db:1,bench:1,a:{ft:[124,118],kn:[121,93],hip:[106,70],kn2:[92,90],ft2:[74,98],sh:[106,36],head:[106,24],el:[106,52],ha:[106,68]},b:{ft:[124,118],kn:[128,94],hip:[102,90],kn2:[88,110],ft2:[74,98],sh:[102,56],head:[102,44],el:[102,72],ha:[102,88]}},
+ lunge:{period:2600,db:1,a:{ft:[122,118],kn:[118,93],hip:[105,70],kn2:[94,93],ft2:[86,118],sh:[105,36],head:[105,24],el:[105,52],ha:[105,68]},b:{ft:[125,118],kn:[127,93],hip:[103,90],kn2:[90,114],ft2:[68,116],sh:[103,56],head:[103,44],el:[103,72],ha:[103,88]}},
+ situp:{period:2600,db:1,a:{ft:[150,118],kn:[130,96],hip:[105,116],sh:[65,116],head:[51,113],el:[78,107],ha:[72,108]},b:{ft:[150,118],kn:[130,96],hip:[105,116],sh:[118,80],head:[122,66],el:[127,92],ha:[124,82]}},
+ legraise:{period:2600,a:{head:[40,114],sh:[55,116],hip:[95,116],kn:[120,116],ft:[145,116],el:[72,118],ha:[88,118]},b:{head:[40,114],sh:[55,116],hip:[95,116],kn:[97,92],ft:[99,68],el:[72,118],ha:[88,118]}},
+ plank:{period:3000,hold:1,a:{ft:[40,118],kn:[68,110],hip:[96,101],sh:[140,90],head:[155,84],el:[140,118],ha:[165,118]},b:{ft:[40,118],kn:[68,110],hip:[96,99],sh:[140,89],head:[155,83],el:[140,118],ha:[165,118]}},
+ walk:{period:1400,a:{hip:[100,70],sh:[102,36],head:[103,24],kn:[110,94],ft:[114,118],kn2:[94,94],ft2:[86,118],el:[96,52],ha:[94,66],el2:[106,52],ha2:[110,66]},b:{hip:[100,70],sh:[102,36],head:[103,24],kn:[94,94],ft:[86,118],kn2:[110,94],ft2:[114,118],el:[106,52],ha:[110,66],el2:[96,52],ha2:[94,66]}}
+};
+const EX={
+ goblet:{name:"Goblet squat",move:"goblet",hits:"Quads, glutes, core",range:[12,25],unit:"reps",ladder:["3 s down","3 s down + 2 s pause at the bottom","1.5 reps (down, halfway up, down, up)","Heels raised on a book, 1.5 reps"],steps:["One dumbbell vertical against your chest, feet shoulder width, toes slightly out.","Sit down in 3 s: knees over toes, chest tall, heels down, as deep as you can keep a flat back.","Stand up hard. Stop with 0 to 2 clean reps left."]},
+ pushup:{name:"Push-up",move:"pushup",hits:"Chest, front delts, triceps",range:[8,25],unit:"reps",ladder:["3 s down + 1 s pause on the floor","Feet on a chair","Deficit: hands on the two dumbbells","Feet on a chair + deficit"],steps:["Hands just wider than shoulders, elbows about 45° out, body straight.","2 to 3 s down until your chest nearly touches the floor.","Push up fast. Past 25 reps, move up the ladder instead."]},
+ row1:{name:"One-arm dumbbell row",move:"row1",hits:"Lats, mid back, rear delts, biceps",range:[10,20],unit:"reps per arm",ladder:["2 s squeeze at the top","3 s lowering + full stretch","1.5 reps","Add 5 bottom-half partials after failure"],steps:["Free hand on a chair or couch arm, flat back, dumbbell under your shoulder.","Drive the elbow back toward your back pocket (the lat line).","Lower in 2 to 3 s to a full stretch. Finish one arm, then switch."]},
+ latraise:{name:"Bent-arm single-arm lateral raise",move:"latraise",hits:"Side delts (shoulder width)",range:[8,15],unit:"reps per arm",ladder:["Lean away holding a door frame","2 s pause at the top","Add 5 to 8 bottom-half partials after failure","Straighter elbow (longer lever)"],steps:["Elbow bent 90°, dumbbell by your hip. Straight-arm raises with 35 lb are too heavy for most; the bent arm makes it workable.","Lift the elbow out to the side to shoulder height. No shrug, no swing.","Lower in 2 to 3 s. When full reps fail, keep going with bottom-half reps."]},
+ ohtri:{name:"Overhead triceps extension",move:"tricep",hits:"Triceps (long head)",range:[10,20],unit:"reps",ladder:["3 s lowering","2 s pause in the deep stretch","Single arm","Single arm + partials after failure"],steps:["One dumbbell overhead, both hands cupping the top end. Sit if your back arches.","Bend only at the elbows, lower behind your head for a full stretch.","Straighten your arms, elbows pointed forward."]},
+ situp:{name:"Weighted sit-up",move:"situp",hits:"Abs, hip flexors",range:[10,20],unit:"reps",ladder:["3 s lowering","Dumbbell at arm's length overhead","Feet not anchored"],steps:["Hug one dumbbell to your chest, knees bent, feet under the couch.","Roll up, ribs toward hips. No yanking.","3 s down. Drop the weight if your lower back takes over."]},
+ rdl:{name:"Dumbbell Romanian deadlift",move:"rdl",hits:"Hamstrings, glutes, lower back, grip",range:[12,25],unit:"reps",ladder:["3 s down + 1 s pause in the stretch","Single-leg RDL (hold a wall lightly)","Single-leg RDL, 3 s down"],steps:["Stand tall, dumbbells in front of your thighs, soft knees.","Hinge in 3 s: hips back, back flat, until a strong hamstring stretch.","Drive hips forward to stand. Feel hamstrings and glutes, not your lower back."]},
+ floorpress:{name:"Dumbbell floor press",move:"floorpress",hits:"Chest, front delts, triceps",range:[12,25],unit:"reps",ladder:["3 s down + 1 s pause on the floor","1.5 reps","Single-arm floor press"],steps:["Lie on the floor, knees bent, dumbbells above your chest.","Lower in 3 s, elbows about 45° from your sides, until upper arms touch the floor.","Pause 1 s, no bounce, then press and squeeze."]},
+ row2:{name:"Two-arm bent-over row",move:"row",hits:"Upper back, lats, rear delts, biceps",range:[10,20],unit:"reps",ladder:["2 s squeeze at the top","Chest-supported on a couch arm, 3 s down","1.5 reps"],steps:["Soft knees, hips back, torso near 45°, back flat.","Drive both elbows toward your hips, pinch shoulder blades.","2 to 3 s down to a full hang."]},
+ uprow:{name:"Wide-grip dumbbell upright row",move:"uprow",hits:"Side delts, upper traps",range:[10,20],unit:"reps",ladder:["2 s pause at the top","3 s lowering","Single arm"],steps:["A dumbbell in each hand, hands wider than the hips.","Pull elbows up and out to shoulder height, hands under the elbows.","Hands no higher than the lower chest for shoulder comfort. Lower in 2 to 3 s."]},
+ curl:{name:"Hammer curl",move:"curl",hits:"Biceps, brachialis, forearms",range:[8,15],unit:"reps per arm",ladder:["3 s lowering","Both arms together","Seated incline curl on the couch"],steps:["Palms facing each other, elbows pinned. Alternate arms.","Curl without swinging your torso.","3 s down to a straight arm."]},
+ legraise:{name:"Lying leg raise",move:"legraise",hits:"Lower abs, hip flexors",range:[10,20],unit:"reps",ladder:["3 s lowering","Hips curl off the floor at the top","Dumbbell between the feet"],steps:["Lie flat, hands under hips, lower back pressed down.","Lift straight legs until they point at the ceiling.","Lower slowly, stop just above the floor."]},
+ bss:{name:"Bulgarian split squat",move:"bss",hits:"Quads, glutes, adductors",range:[8,15],unit:"reps per leg",ladder:["3 s down","2 s pause at the bottom","1.5 reps","Front foot on a book (deficit)"],steps:["Back foot on a chair or couch, front foot two steps ahead, dumbbells at sides.","Lower straight down until the back knee nearly touches.","Drive through the whole front foot. Finish one leg, then switch."]},
+ press:{name:"Standing dumbbell shoulder press",move:"press",hits:"Front and side delts, triceps, core",range:[6,15],unit:"reps",ladder:["3 s lowering","Seated on a chair","Single arm"],steps:["Dumbbells at shoulder height, glutes and abs tight.","Press overhead to lockout, biceps by your ears.","2 to 3 s back down. Do not lean back."]},
+ lunge:{name:"Dumbbell reverse lunge",move:"lunge",hits:"Quads, glutes, hamstrings",range:[10,15],unit:"reps per leg",ladder:["3 s down","Front foot on a book (deficit)","1.5 reps"],steps:["Dumbbells at your sides, step long backward.","Lower until the back knee nearly touches, torso upright.","Push through the front foot to stand. All reps one leg, then switch."]},
+ plank:{name:"Plank",move:"plank",hits:"Abs, deep core",range:[30,60],unit:"seconds",ladder:["Hard-style plank (squeeze everything)","Long-lever plank","Dumbbell on your back"],steps:["Forearms down, elbows under shoulders, legs straight.","Squeeze glutes and abs: one straight line.","Slow, steady breaths."]},
+ walk:{name:"Incline treadmill walk",move:"walk",hits:"Heart, lungs, calories",range:[20,25],unit:"minutes",ladder:["Raise incline 1%","Raise speed 0.2 mph"],steps:["Incline 6 to 12%, about 3 mph, hands off the rails.","Conversational pace.","Low-impact cardio that barely dents leg recovery."]}
+};
+const GO="straight into partner", REST="rest 60–75 s";
+const PLAN={
+ "Day A":{label:"A · Squat + Push",slots:[["Superset 1","goblet",4,GO],["Superset 1","pushup",4,REST],["Superset 2","row1",3,GO],["Superset 2","latraise",3,REST],["Superset 3","ohtri",3,GO],["Superset 3","situp",3,"rest 45 s"]]},
+ "Day B":{label:"B · Hinge + Press",slots:[["Superset 1","rdl",4,GO],["Superset 1","floorpress",4,REST],["Superset 2","row2",3,GO],["Superset 2","uprow",3,REST],["Superset 3","curl",3,GO],["Superset 3","legraise",3,"rest 45 s"]]},
+ "Walk + Core":{label:"Walk + Core",slots:[["Treadmill","walk",1,"then core"],["Core","plank",3,"rest 45 s"]]},
+ "Day C":{label:"C · Single-leg + Pull",slots:[["Superset 1","bss",4,GO],["Superset 1","row1",4,REST],["Superset 2","pushup",3,GO],["Superset 2","latraise",3,REST],["Superset 3","curl",3,GO],["Superset 3","ohtri",3,"rest 45 s"]]},
+ "Day D":{label:"D · Hinge + Overhead",slots:[["Superset 1","rdl",4,GO],["Superset 1","press",4,REST],["Superset 2","lunge",3,GO],["Superset 2","row2",3,REST],["Superset 3","uprow",3,GO],["Superset 3","legraise",3,"rest 45 s"]]}
+};
+const ROTATION=["Day A","Day B","Walk + Core","Day C","Day D"];
+
+/* ---------------- storage ---------------- */
+const KEY="shadowbuild.v1";
+function load(){try{const d=JSON.parse(localStorage.getItem(KEY)||"{}");return{log:Array.isArray(d.log)?d.log:[],body:Array.isArray(d.body)?d.body:[],levels:d.levels||{},draft:d.draft||{}};}catch(e){return{log:[],body:[],levels:{},draft:{}};}}
+let S=load();
+function save(){localStorage.setItem(KEY,JSON.stringify(S));}
+const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");};
+const fmt=d=>new Date(d+"T12:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric"});
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function history(ex){const out=[];[...S.log].sort((a,b)=>a.date.localeCompare(b.date)).forEach(s=>s.entries.forEach(e=>{if(e.ex===ex&&e.sets.length)out.push({date:s.date,sets:e.sets,total:e.sets.reduce((t,r)=>t+r,0),best:Math.max(...e.sets),level:e.level||0});}));return out;}
+function nextTarget(ex,h){const e=EX[ex];const[lo,hi]=e.range;if(!h)return"First time: find a weight-free rep count that leaves 1–2 in the tank, aim "+lo+"–"+hi;
+ if(h.sets.length&&h.sets.every(r=>r>=hi)){const step=e.ladder[h.level];return step?"Advance → "+step+", restart near "+lo:"Top of ladder: add a set or 5 partials";}
+ return"Target "+h.sets.map(r=>Math.min(hi,Math.max(lo,r+1))).join("/")+" "+e.unit;}
+function nextDay(){if(!S.log.length)return ROTATION[0];const last=[...S.log].sort((a,b)=>(a.date+(a.t||"")).localeCompare(b.date+(b.t||""))).pop();const i=ROTATION.indexOf(last.day);return ROTATION[(i+1)%ROTATION.length];}
+
+/* ---------------- figures ---------------- */
+const KEYS=["head","sh","el","ha","hip","kn","ft","el2","ha2","kn2","ft2"];
+function full(p){return Object.assign({},p,{el2:p.el2||p.el,ha2:p.ha2||p.ha,kn2:p.kn2||p.kn,ft2:p.ft2||p.ft});}
+function figSVG(id,label){const m=MOVES[id];return `<svg class="fig" data-move="${id}" viewBox="0 0 200 135" role="img" aria-label="${esc(label)} demo">
+<line x1="10" y1="120" x2="190" y2="120" stroke="#1f3a66" stroke-width="1.5"/>
+${m.bench?`<rect x="${m.benchX||56}" y="100" width="28" height="20" rx="3" fill="none" stroke="#5b7298" stroke-width="2"/>`:""}
+<polyline class="l1" fill="none" stroke="#2c4f80" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline class="l2" fill="none" stroke="#2c4f80" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline class="l3" fill="none" stroke="#3fa9ff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px #3fa9ff)"/>
+<polyline class="l4" fill="none" stroke="#3fa9ff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px #3fa9ff)"/>
+<polyline class="l5" fill="none" stroke="#3fa9ff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 3px #3fa9ff)"/>
+${m.db?`<rect class="db" width="14" height="7" rx="2" fill="#c9d6ea"/>`:""}
+<circle class="hd" r="8" fill="#7cc8ff"/>
+<text x="12" y="132" fill="#8ea4c4" font-size="8">${esc(label.toUpperCase())}</text>
+<text class="rc" x="188" y="132" text-anchor="end" fill="#8ea4c4" font-size="8"></text></svg>`;}
+function tick(ts){document.querySelectorAll("svg.fig").forEach(svg=>{const m=MOVES[svg.dataset.move];if(!m)return;const a=full(m.a),b=full(m.b);const ph=(ts%m.period)/m.period;const u=(1-Math.cos(2*Math.PI*ph))/2;const at=k=>[a[k][0]+(b[k][0]-a[k][0])*u,a[k][1]+(b[k][1]-a[k][1])*u];const pts=ks=>ks.map(k=>at(k).join(",")).join(" ");
+ svg.querySelector(".l1").setAttribute("points",pts(["sh","el2","ha2"]));svg.querySelector(".l2").setAttribute("points",pts(["hip","kn2","ft2"]));svg.querySelector(".l3").setAttribute("points",pts(["sh","hip"]));svg.querySelector(".l4").setAttribute("points",pts(["hip","kn","ft"]));svg.querySelector(".l5").setAttribute("points",pts(["sh","el","ha"]));
+ const h=at("head");const c=svg.querySelector(".hd");c.setAttribute("cx",h[0]);c.setAttribute("cy",h[1]);const db=svg.querySelector(".db");if(db){const ha=at("ha");db.setAttribute("x",ha[0]-7);db.setAttribute("y",ha[1]-3.5);}
+ svg.querySelector(".rc").textContent=m.hold?"HOLD":"REP "+Math.floor(ts/m.period);});requestAnimationFrame(tick);}
+requestAnimationFrame(tick);
+
+/* ---------------- chart ---------------- */
+function lineChart(points,unit){if(!points.length)return"";const W=340,H=180,pl=36,pr=12,pt=14,pb=28;const vals=points.map(p=>p.v);const max=Math.max(...vals)*1.15||10,min=0;
+ const x=i=>pl+(points.length===1?(W-pl-pr)/2:i*(W-pl-pr)/(points.length-1));const y=v=>pt+(H-pt-pb)*(1-(v-min)/(max-min));
+ let g="";for(let k=0;k<=4;k++){const v=min+(max-min)*k/4;g+=`<line x1="${pl}" x2="${W-pr}" y1="${y(v)}" y2="${y(v)}" stroke="#16294a"/><text x="${pl-4}" y="${y(v)+3}" text-anchor="end" fill="#8ea4c4" font-size="9">${Math.round(v)}</text>`;}
+ const lbl=points.map((p,i)=>{const n=points.length;const show=n<=6||[0,1,2,3,4,5].some(k=>Math.round(k*(n-1)/5)===i);return show?`<text x="${x(i)}" y="${H-10}" text-anchor="middle" fill="#8ea4c4" font-size="9">${esc(p.l)}</text>`:"";}).join("");
+ const path=points.map((p,i)=>(i?"L":"M")+x(i)+","+y(p.v)).join(" ");
+ const area=`M${x(0)},${y(0)} `+points.map((p,i)=>"L"+x(i)+","+y(p.v)).join(" ")+` L${x(points.length-1)},${y(0)} Z`;
+ const dots=points.map((p,i)=>`<circle cx="${x(i)}" cy="${y(p.v)}" r="3.5" fill="#7cc8ff"/>`).join("");
+ return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="progress chart">${g}<path d="${area}" fill="rgba(63,169,255,.15)"/><path d="${path}" fill="none" stroke="#3fa9ff" stroke-width="2.5" style="filter:drop-shadow(0 0 3px #3fa9ff)"/>${dots}${lbl}<text x="${pl}" y="10" fill="#8ea4c4" font-size="9">${esc(unit)}</text></svg>`;}
+
+/* ---------------- views ---------------- */
+let tab="workout", day=null, progEx=null;
+const app=document.getElementById("app");
+function toast(msg){const t=document.createElement("div");t.className="toast";t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2200);}
+function renderNav(){const tabs=[["workout","Workout"],["progress","Progress"],["history","History"],["body","Body"],["data","Backup"]];document.getElementById("nav").innerHTML=tabs.map(([k,l])=>`<button data-tab="${k}" class="${tab===k?"on":""}">${l}</button>`).join("");}
+document.getElementById("nav").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;tab=b.dataset.tab;render();});
+
+function draftFor(d){if(!S.draft[d])S.draft[d]={};return S.draft[d];}
+function workoutView(){if(!day)day=nextDay();const plan=PLAN[day];const dr=draftFor(day);
+ let h=`<section class="win"><h2>Quest log · choose session</h2><div class="chips">${ROTATION.map(d=>`<button class="chip ${d===day?"on":""}" data-day="${esc(d)}">${esc(PLAN[d].label)}${d===nextDay()?" ★":""}</button>`).join("")}</div><p class="muted">★ = next in your rotation. Run sessions in order, not by weekday. 3 min warm-up, then supersets: exercise 1 → exercise 2 → rest. Stop most sets 1–3 reps from failure; last set 0–1.</p></section>`;
+ const seen={};let lastBlock="";
+ plan.slots.forEach(([block,ex,sets,rest],idx)=>{const e=EX[ex];const key=ex+"#"+idx;const hist=history(ex);const last=hist[hist.length-1];const lvl=S.levels[ex]||0;
+  if(block!==lastBlock){if(lastBlock)h+=`</section>`;h+=`<section class="win"><h2>${esc(block)}</h2>`;lastBlock=block;}
+  const vals=dr[key]||[];
+  h+=`<div class="ex"><div class="exhead"><h3>${esc(e.name)}</h3><span class="tag">${sets} × ${e.range[0]}–${e.range[1]} ${esc(e.unit)} · ${esc(rest)}</span></div>
+  <div class="muted">${esc(e.hits)}</div>${figSVG(e.move,e.name)}
+  <details><summary>Form cues</summary><ol>${e.steps.map(s=>`<li>${esc(s)}</li>`).join("")}</ol></details>
+  <label class="muted">Version (progression ladder)<select data-level="${ex}"><option value="0"${lvl===0?" selected":""}>Base: as described</option>${e.ladder.map((s,i)=>`<option value="${i+1}"${lvl===i+1?" selected":""}>Step ${i+1}: ${esc(s)}</option>`).join("")}</select></label>
+  <div class="last">${last?"Last ("+fmt(last.date)+"): "+last.sets.join("/"):"No history yet"}</div>
+  <div class="target">${esc(nextTarget(ex,last))}</div>
+  <div class="sets">${Array.from({length:sets},(_,i)=>`<div><label>Set ${i+1}</label><input type="number" inputmode="numeric" min="0" max="999" data-key="${esc(key)}" data-i="${i}" value="${vals[i]!=null?vals[i]:""}" placeholder="${last&&last.sets[i]!=null?last.sets[i]:"–"}"></div>`).join("")}</div></div>`;
+  if(rest.startsWith("rest")){const sec=rest.includes("45")?45:75;h+=`<button class="btn small" data-rest="${sec}">Start ${sec} s rest</button>`;}
+ });
+ h+=`</section><section class="win"><h2>Complete session</h2><div class="row"><input type="date" id="sdate" value="${today()}"><button class="btn primary" id="finish">Mark ${esc(PLAN[day].label)} done</button></div><p class="muted">Saves the reps you entered to this device. Empty sets are skipped.</p></section>`;
+ return h;}
+
+function progressView(){const exs=[...new Set(S.log.flatMap(s=>s.entries.map(e=>e.ex)))].filter(x=>EX[x]);
+ if(!exs.length)return`<section class="win"><h2>Progress</h2><p class="muted">Log a session to see charts, records and targets.</p></section>`;
+ if(!progEx||!exs.includes(progEx))progEx=exs[0];const hs=history(progEx);
+ const weekAgo=Date.now()-7*864e5;const wk=S.log.filter(s=>new Date(s.date+"T12:00:00").getTime()>=weekAgo).length;
+ let h=`<section class="win"><h2>Status</h2><div class="row"><div><div style="font-size:28px;color:var(--glow2)">${wk} / 5</div><div class="muted">sessions, last 7 days</div></div><div><div style="font-size:28px;color:var(--glow2)">${S.log.length}</div><div class="muted">sessions total</div></div></div></section>`;
+ h+=`<section class="win"><h2>Total ${esc(EX[progEx].unit.split(" ")[0])} per session</h2><select id="progEx">${exs.map(x=>`<option value="${x}"${x===progEx?" selected":""}>${esc(EX[x].name)}</option>`).join("")}</select>${lineChart(hs.map(p=>({l:fmt(p.date),v:p.total})),EX[progEx].unit)}</section>`;
+ h+=`<section class="win"><h2>Records · next targets</h2><table><thead><tr><th>Exercise</th><th class="n">Best set</th><th class="n">Best total</th><th>Next</th></tr></thead><tbody>${exs.map(x=>{const hh=history(x);return`<tr><td>${esc(EX[x].name)}</td><td class="n">${Math.max(...hh.map(p=>p.best))}</td><td class="n">${Math.max(...hh.map(p=>p.total))}</td><td>${esc(nextTarget(x,hh[hh.length-1]))}</td></tr>`;}).join("")}</tbody></table></section>`;
+ return h;}
+
+function historyView(){if(!S.log.length)return`<section class="win"><h2>History</h2><p class="muted">No sessions logged yet.</p></section>`;
+ const rows=S.log.map((s,i)=>({s,i})).sort((a,b)=>b.s.date.localeCompare(a.s.date));
+ return`<section class="win"><h2>History</h2>${rows.map(({s,i})=>`<div class="ex"><div class="exhead"><h3>${esc(s.day)}</h3><span class="tag">${fmt(s.date)}</span></div>${s.entries.map(e=>`<div class="muted">${esc(EX[e.ex]?EX[e.ex].name:e.ex)}: ${e.sets.join("/")}${e.level?" (step "+e.level+")":""}</div>`).join("")}<button class="btn small danger" data-del="${i}">Delete</button></div>`).join("")}</section>`;}
+
+function bodyView(){const b=[...S.body].sort((x,y)=>x.date.localeCompare(y.date));const w=b.filter(x=>x.weightLb!=null),wa=b.filter(x=>x.waistIn!=null);
+ return`<section class="win"><h2>Body log</h2><div class="row"><input type="date" id="bdate" value="${today()}"><input type="number" step="0.1" inputmode="decimal" id="bw" placeholder="Weight lb"><input type="number" step="0.1" inputmode="decimal" id="bwa" placeholder="Waist in"><button class="btn primary" id="bsave">Save</button></div><p class="muted">Weigh in the morning after waking, same conditions each time. Waist at the navel, relaxed.</p></section>
+ ${w.length?`<section class="win"><h2>Weight (lb)</h2>${lineChart(w.map(x=>({l:fmt(x.date),v:x.weightLb})),"lb")}</section>`:""}
+ ${wa.length?`<section class="win"><h2>Waist (in)</h2>${lineChart(wa.map(x=>({l:fmt(x.date),v:x.waistIn})),"in")}</section>`:""}
+ ${b.length?`<section class="win"><h2>Entries</h2><table><thead><tr><th>Date</th><th class="n">Weight</th><th class="n">Waist</th><th></th></tr></thead><tbody>${b.map(x=>`<tr><td>${fmt(x.date)}</td><td class="n">${x.weightLb!=null?x.weightLb:""}</td><td class="n">${x.waistIn!=null?x.waistIn:""}</td><td><button class="btn small danger" data-bdel="${esc(x.date)}">✕</button></td></tr>`).join("")}</tbody></table></section>`:""}`;}
+
+function dataView(){return`<section class="win"><h2>Backup & move devices</h2><p class="muted">Your data lives only in this browser on this device. Export a JSON file regularly; import it on another device to continue. The file uses the same LOG/BODY shape as the Shadow Build page.</p>
+ <div class="row"><button class="btn primary" id="export">Export JSON</button><label class="btn" style="text-align:center;display:flex;align-items:center;justify-content:center">Import JSON<input type="file" id="import" accept="application/json,.json" class="hidden"></label></div>
+ <p class="muted">${S.log.length} sessions · ${S.body.length} body entries stored.</p><button class="btn danger" id="wipe">Erase all data on this device</button></section>`;}
+
+function render(){renderNav();app.innerHTML=tab==="workout"?workoutView():tab==="progress"?progressView():tab==="history"?historyView():tab==="body"?bodyView():dataView();}
+
+/* ---------------- events ---------------- */
+app.addEventListener("input",e=>{const t=e.target;if(t.dataset.key){const dr=draftFor(day);const arr=dr[t.dataset.key]||[];const v=t.value===""?null:Math.max(0,parseInt(t.value,10));arr[+t.dataset.i]=isNaN(v)?null:v;dr[t.dataset.key]=arr;save();}});
+app.addEventListener("change",e=>{const t=e.target;if(t.dataset.level){S.levels[t.dataset.level]=+t.value;save();render();}
+ if(t.id==="progEx"){progEx=t.value;render();}
+ if(t.id==="import"&&t.files&&t.files[0]){const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);const log=d.log||d.LOG,body=d.body||d.BODY;if(!Array.isArray(log))throw new Error("no log");
+   const ok=log.every(s=>typeof s.date==="string"&&typeof s.day==="string"&&Array.isArray(s.entries)&&s.entries.every(x=>typeof x.ex==="string"&&Array.isArray(x.sets)));if(!ok)throw new Error("bad shape");
+   if(!confirm("Replace data on this device with "+log.length+" sessions from the file?"))return;S.log=log;S.body=Array.isArray(body)?body:[];if(d.levels)S.levels=d.levels;save();toast("Imported "+log.length+" session"+(log.length===1?"":"s"));render();}catch(err){toast("Import failed: "+err.message);}};r.readAsText(t.files[0]);}});
+app.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
+ if(b.dataset.day){day=b.dataset.day;render();window.scrollTo(0,0);return;}
+ if(b.dataset.rest){startRest(+b.dataset.rest);return;}
+ if(b.id==="finish"){const dr=draftFor(day);const entries=[];const by={};
+  PLAN[day].slots.forEach(([blk,ex,sets],idx)=>{const v=(dr[ex+"#"+idx]||[]).filter(x=>x!=null&&!isNaN(x));if(!v.length)return;if(!by[ex]){by[ex]={ex,sets:[],level:S.levels[ex]||0};entries.push(by[ex]);}by[ex].sets.push(...v);});
+  if(!entries.length){toast("Enter reps for at least one set first");return;}
+  entries.forEach(x=>{if(!x.level)delete x.level;});
+  S.log.push({date:document.getElementById("sdate").value||today(),day,entries,t:Date.now()});delete S.draft[day];save();toast("Session saved · "+PLAN[day].label);day=nextDay();render();window.scrollTo(0,0);return;}
+ if(b.dataset.del!=null){if(confirm("Delete this session?")){S.log.splice(+b.dataset.del,1);save();render();}return;}
+ if(b.id==="bsave"){const d=document.getElementById("bdate").value||today();const w=parseFloat(document.getElementById("bw").value),wa=parseFloat(document.getElementById("bwa").value);if(isNaN(w)&&isNaN(wa)){toast("Enter weight or waist");return;}
+  S.body=S.body.filter(x=>x.date!==d);const en={date:d};if(!isNaN(w))en.weightLb=w;if(!isNaN(wa))en.waistIn=wa;S.body.push(en);save();toast("Saved");render();return;}
+ if(b.dataset.bdel){S.body=S.body.filter(x=>x.date!==b.dataset.bdel);save();render();return;}
+ if(b.id==="export"){const data={app:"ShadowBuild",version:1,exported:new Date().toISOString(),log:S.log.map(({t,...r})=>r),body:S.body,levels:S.levels};const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="shadowbuild-backup-"+today()+".json";document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);return;}
+ if(b.id==="wipe"){if(confirm("Erase every session and body entry on this device? Export first if unsure.")){S={log:[],body:[],levels:{},draft:{}};save();render();}return;}
+});
+
+/* ---------------- rest timer ---------------- */
+let tEnd=0,tInt=null;const tval=document.getElementById("tval");
+function beep(){try{const C=window.AudioContext||window.webkitAudioContext;const c=new C();[0,0.25,0.5].forEach(s=>{const o=c.createOscillator(),g=c.createGain();o.frequency.value=880;o.connect(g);g.connect(c.destination);g.gain.value=.15;o.start(c.currentTime+s);o.stop(c.currentTime+s+.15);});}catch(e){}if(navigator.vibrate)navigator.vibrate([200,100,200]);}
+function showT(){const left=Math.max(0,Math.ceil((tEnd-Date.now())/1000));tval.textContent=Math.floor(left/60)+":"+String(left%60).padStart(2,"0");if(left<=0&&tInt){clearInterval(tInt);tInt=null;tval.textContent="GO";beep();}}
+function startRest(sec){tEnd=Date.now()+sec*1000;if(tInt)clearInterval(tInt);tInt=setInterval(showT,250);showT();}
+document.getElementById("timer").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;if(b.dataset.rest)startRest(+b.dataset.rest);if(b.id==="tstop"){if(tInt)clearInterval(tInt);tInt=null;tval.textContent="0:00";}});
+
+render();
+if(location.protocol.startsWith("http")){const l=document.createElement("link");l.rel="manifest";l.href="manifest.webmanifest";document.head.appendChild(l);}
+if("serviceWorker" in navigator&&location.protocol.startsWith("http")){navigator.serviceWorker.register("sw.js").catch(()=>{});}
+</script>
+</body>
+</html>
